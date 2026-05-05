@@ -61,6 +61,13 @@
         <h2>Answer Feedback</h2>
         <label for="answerBox">Paste a subjective answer</label>
         <textarea id="answerBox" class="answer-box" placeholder="Write or paste an answer here, then choose a generated subjective question to assess against."></textarea>
+        <div class="photo-answer">
+          <label for="answerImage">Photo answer</label>
+          <input id="answerImage" type="file" accept="image/*" capture="environment">
+          <div id="imagePreview" class="image-preview" hidden></div>
+          <button id="ocrBtn" class="secondary" type="button">Extract Text From Photo</button>
+          <p id="ocrStatus" class="hint">On mobile, this opens the camera. OCR works in the browser and may need a few seconds.</p>
+        </div>
         <button id="gradeBtn" class="primary">Assess Answer</button>
       </section>
     </aside>
@@ -148,6 +155,7 @@
     <section class="question-card"></section>
   </template>
 
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

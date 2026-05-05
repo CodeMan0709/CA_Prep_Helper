@@ -222,6 +222,10 @@ const els = {
   paperTitle: document.querySelector("#paperTitle"),
   gradeBtn: document.querySelector("#gradeBtn"),
   answerBox: document.querySelector("#answerBox"),
+  answerImage: document.querySelector("#answerImage"),
+  imagePreview: document.querySelector("#imagePreview"),
+  ocrBtn: document.querySelector("#ocrBtn"),
+  ocrStatus: document.querySelector("#ocrStatus"),
   feedbackPanel: document.querySelector("#feedbackPanel"),
   feedbackOutput: document.querySelector("#feedbackOutput"),
   resetSyllabus: document.querySelector("#resetSyllabus"),
@@ -286,6 +290,8 @@ function bindEvents() {
   });
 
   els.gradeBtn.addEventListener("click", gradeAnswer);
+  els.answerImage.addEventListener("change", handleAnswerImage);
+  els.ocrBtn.addEventListener("click", extractAnswerText);
   els.saveBtn.addEventListener("click", saveState);
   els.printBtn.addEventListener("click", () => window.print());
   els.exportBtn.addEventListener("click", exportHtml);
@@ -446,6 +452,59 @@ function markVisibleDone() {
 function clearChecklist() {
   saveChecklist({});
   renderChecklist();
+}
+
+function handleAnswerImage() {
+  const file = els.answerImage.files?.[0];
+  if (!file) {
+    els.imagePreview.hidden = true;
+    els.imagePreview.innerHTML = "";
+    return;
+  }
+
+  const url = URL.createObjectURL(file);
+  els.imagePreview.innerHTML = `<img src="${url}" alt="Selected answer photo preview">`;
+  els.imagePreview.hidden = false;
+  els.ocrStatus.textContent = "Photo added. Press Extract Text From Photo to copy handwriting/printed text into the answer box.";
+}
+
+async function extractAnswerText() {
+  const file = els.answerImage.files?.[0];
+  if (!file) {
+    els.ocrStatus.textContent = "Please take or upload an answer photo first.";
+    return;
+  }
+
+  if (!window.Tesseract) {
+    els.ocrStatus.textContent = "OCR library could not load. You can still view the photo and type the answer manually.";
+    return;
+  }
+
+  els.ocrBtn.disabled = true;
+  els.ocrStatus.textContent = "Reading the photo. Clear, straight images work best.";
+
+  try {
+    const result = await Tesseract.recognize(file, "eng", {
+      logger: (event) => {
+        if (event.status === "recognizing text") {
+          els.ocrStatus.textContent = `Reading text: ${Math.round((event.progress || 0) * 100)}%`;
+        }
+      }
+    });
+    const text = result?.data?.text?.trim() || "";
+    if (!text) {
+      els.ocrStatus.textContent = "I could not detect text clearly. Try a brighter, flatter photo or type the answer manually.";
+      return;
+    }
+    els.answerBox.value = els.answerBox.value.trim()
+      ? `${els.answerBox.value.trim()}\n\n${text}`
+      : text;
+    els.ocrStatus.textContent = "Text extracted into the answer box. Review it once before assessing.";
+  } catch (error) {
+    els.ocrStatus.textContent = "OCR failed in this browser. The photo is still attached for reference; type or paste the answer text to assess.";
+  } finally {
+    els.ocrBtn.disabled = false;
+  }
 }
 
 function generatePaper() {
