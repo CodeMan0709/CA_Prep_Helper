@@ -208,7 +208,7 @@ let state = {
   mode: "topic",
   selectedQuestionId: null,
   generated: [],
-  view: "mock"
+  view: "home"
 };
 
 const els = {
@@ -232,8 +232,13 @@ const els = {
   saveBtn: document.querySelector("#saveBtn"),
   printBtn: document.querySelector("#printBtn"),
   exportBtn: document.querySelector("#exportBtn"),
+  homeView: document.querySelector("#homeView"),
   mockView: document.querySelector("#mockView"),
   checklistView: document.querySelector("#checklistView"),
+  homeProgress: document.querySelector("#homeProgress"),
+  homeProgressBars: document.querySelector("#homeProgressBars"),
+  mockHistory: document.querySelector("#mockHistory"),
+  answerHistory: document.querySelector("#answerHistory"),
   checklistOutput: document.querySelector("#checklistOutput"),
   checklistSearch: document.querySelector("#checklistSearch"),
   overallProgress: document.querySelector("#overallProgress"),
@@ -266,6 +271,8 @@ function init() {
   updateModeButtons();
   renderTopicChips();
   renderChecklist();
+  renderDashboard();
+  setView("home");
   bindEvents();
 }
 
@@ -299,6 +306,9 @@ function bindEvents() {
   els.markVisibleBtn.addEventListener("click", markVisibleDone);
   els.clearChecklistBtn.addEventListener("click", clearChecklist);
   document.querySelectorAll(".view-toggle").forEach((button) => {
+    button.addEventListener("click", () => setView(button.dataset.view));
+  });
+  document.querySelectorAll(".feature-card").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.view));
   });
 }
@@ -349,12 +359,15 @@ function renderTopicChips() {
 
 function setView(view) {
   state.view = view;
+  els.homeView.hidden = view !== "home";
   els.mockView.hidden = view !== "mock";
   els.checklistView.hidden = view !== "checklist";
   document.querySelectorAll(".view-toggle").forEach((button) => {
     button.classList.toggle("active", button.dataset.view === view);
   });
   if (view === "checklist") renderChecklist();
+  if (view === "home") renderDashboard();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function getChecklist() {
@@ -407,6 +420,7 @@ function renderChecklist() {
       next[input.dataset.key] = input.checked;
       saveChecklist(next);
       renderChecklist();
+      renderDashboard();
     });
   });
 }
@@ -447,11 +461,13 @@ function markVisibleDone() {
   });
   saveChecklist(checklist);
   renderChecklist();
+  renderDashboard();
 }
 
 function clearChecklist() {
   saveChecklist({});
   renderChecklist();
+  renderDashboard();
 }
 
 function handleAnswerImage() {
@@ -518,6 +534,8 @@ function generatePaper() {
   state.selectedQuestionId = generated.questions.find((q) => q.type !== "mcq")?.id || null;
   els.paperTitle.textContent = generated.title;
   renderPaper(generated, paper, pattern);
+  recordMockAttempt(generated, paper);
+  renderDashboard();
 }
 
 function buildTopicDrill(paper, topics, count, pattern) {
@@ -778,6 +796,8 @@ function gradeAnswer() {
       <p><strong>Exam technique:</strong> Open with the issue, apply the provision/standard to facts, quantify where possible, then conclude. For May 2027, refresh all law/standard references from ICAI applicability announcements.</p>
     </div>
   `;
+  recordAnswerFeedback(question, total, answer);
+  renderDashboard();
 }
 
 function feedbackSentence(score) {
@@ -805,6 +825,83 @@ function saveState() {
   }));
   els.saveBtn.textContent = "Saved";
   setTimeout(() => { els.saveBtn.textContent = "Save"; }, 1100);
+}
+
+function recordMockAttempt(generated, paper) {
+  const attempts = getStoredList("ca-final-mock-history");
+  attempts.unshift({
+    title: generated.title,
+    paper: `Paper ${paper.number}`,
+    mode: generated.modeLabel,
+    questions: generated.questions.length,
+    at: new Date().toISOString()
+  });
+  localStorage.setItem("ca-final-mock-history", JSON.stringify(attempts.slice(0, 10)));
+}
+
+function recordAnswerFeedback(question, score, answer) {
+  const feedback = getStoredList("ca-final-answer-history");
+  feedback.unshift({
+    topic: question.topic,
+    marks: question.marks,
+    score,
+    words: tokenize(answer).length,
+    at: new Date().toISOString()
+  });
+  localStorage.setItem("ca-final-answer-history", JSON.stringify(feedback.slice(0, 10)));
+}
+
+function getStoredList(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderDashboard() {
+  const stats = getProgressStats();
+  els.homeProgress.textContent = `${stats.overall}%`;
+  els.homeProgress.parentElement.style.setProperty("--progress", stats.overall);
+  els.homeProgressBars.innerHTML = [
+    { label: "Overall", value: stats.overall },
+    { label: "Group I", value: stats.groupOne },
+    { label: "Group II", value: stats.groupTwo }
+  ].map((item) => `
+    <div class="mini-bar">
+      <header><span>${item.label}</span><strong>${item.value}%</strong></header>
+      <div class="bar-track"><div class="bar-fill" style="--value: ${item.value}%"></div></div>
+    </div>
+  `).join("");
+
+  const attempts = getStoredList("ca-final-mock-history");
+  els.mockHistory.innerHTML = attempts.length ? attempts.slice(0, 5).map((item) => `
+    <div class="history-item">
+      <strong>${escapeHtml(item.title)}</strong>
+      <span>${escapeHtml(item.mode)} | ${item.questions} questions | ${formatDate(item.at)}</span>
+    </div>
+  `).join("") : `<p class="hint">No mock generated yet. Start with a topic drill or full paper.</p>`;
+
+  const answers = getStoredList("ca-final-answer-history");
+  els.answerHistory.innerHTML = answers.length ? answers.slice(0, 5).map((item) => `
+    <div class="history-item">
+      <strong>${escapeHtml(item.topic)}</strong>
+      <span>${Math.round((item.score * item.marks) / 100)}/${item.marks} indicative | ${item.words} words | ${formatDate(item.at)}</span>
+    </div>
+  `).join("") : `<p class="hint">No subjective answer assessed yet. Generate a mock, select a question, then assess.</p>`;
+}
+
+function getProgressStats() {
+  const checklist = getChecklist();
+  const allRows = papers.flatMap((paper) => paper.topics.map((topic) => ({ paper, key: checklistKey(paper, topic) })));
+  const groupOneRows = allRows.filter((row) => row.paper.group === "Group I");
+  const groupTwoRows = allRows.filter((row) => row.paper.group === "Group II");
+  return {
+    overall: percent(allRows.filter((row) => checklist[row.key]).length, allRows.length),
+    groupOne: percent(groupOneRows.filter((row) => checklist[row.key]).length, groupOneRows.length),
+    groupTwo: percent(groupTwoRows.filter((row) => checklist[row.key]).length, groupTwoRows.length)
+  };
 }
 
 function loadSavedState() {
@@ -861,6 +958,12 @@ function clamp(value, min, max) {
 function percent(done, total) {
   if (!total) return 0;
   return Math.round((done / total) * 100);
+}
+
+function formatDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function escapeHtml(value) {

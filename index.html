@@ -13,14 +13,56 @@
       <h1>Mock Studio</h1>
     </div>
     <nav class="top-actions" aria-label="Primary actions">
-      <button class="icon-btn view-toggle active" data-view="mock" title="Mock generator" aria-label="Mock generator">Mock</button>
+      <button class="icon-btn view-toggle active" data-view="home" title="Dashboard" aria-label="Dashboard">Home</button>
+      <button class="icon-btn view-toggle" data-view="mock" title="Mock generator" aria-label="Mock generator">Mock</button>
       <button class="icon-btn view-toggle" data-view="checklist" title="Preparation checklist" aria-label="Preparation checklist">Checklist</button>
       <button id="printBtn" class="icon-btn" title="Print paper" aria-label="Print paper">Print</button>
       <button id="saveBtn" class="icon-btn" title="Save current setup" aria-label="Save current setup">Save</button>
     </nav>
   </header>
 
-  <main id="mockView" class="app-shell">
+  <main id="homeView" class="landing-page app-view">
+    <section class="landing-hero">
+      <div>
+        <p class="eyebrow">May 2027 prep command center</p>
+        <h2>CA Final Prep Helper</h2>
+        <p>Track the syllabus, generate ICAI-style mocks, review subjective answers, and keep recent attempts in one place.</p>
+      </div>
+      <div class="progress-donut" style="--progress: 0" aria-label="Overall preparation progress">
+        <span id="homeProgress">0%</span>
+      </div>
+    </section>
+
+    <section class="landing-grid">
+      <button class="feature-card" data-view="mock" type="button">
+        <span>Mock Tests</span>
+        <strong>Generate practice papers</strong>
+        <small>Topic drills, full papers, Paper 6 IBS, answer keys, and subjective feedback.</small>
+      </button>
+      <button class="feature-card" data-view="checklist" type="button">
+        <span>Checklist</span>
+        <strong>Track preparation</strong>
+        <small>Tick every paper topic and monitor Group I, Group II, and overall completion.</small>
+      </button>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-card">
+        <h3>Progress</h3>
+        <div class="mini-bars" id="homeProgressBars"></div>
+      </article>
+      <article class="dashboard-card">
+        <h3>Previous Mock Attempts</h3>
+        <div id="mockHistory" class="history-list"></div>
+      </article>
+      <article class="dashboard-card">
+        <h3>Recent Answer Feedback</h3>
+        <div id="answerHistory" class="history-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <main id="mockView" class="app-shell app-view" hidden>
     <aside class="control-panel" aria-label="Mock test controls">
       <section>
         <h2>Paper</h2>
@@ -111,7 +153,7 @@
     </section>
   </main>
 
-  <main id="checklistView" class="checklist-page" hidden>
+  <main id="checklistView" class="checklist-page app-view" hidden>
     <section class="checklist-hero">
       <div>
         <p class="eyebrow">Preparation tracker</p>
