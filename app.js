@@ -213,7 +213,8 @@ let state = {
   currentPaper: null,
   currentPattern: null,
   currentGenerated: null,
-  answerDrafts: {}
+  answerDrafts: {},
+  topicQuestionCount: 12
 };
 
 const els = {
@@ -221,6 +222,7 @@ const els = {
   topicInput: document.querySelector("#topicInput"),
   topicChips: document.querySelector("#topicChips"),
   questionCount: document.querySelector("#questionCount"),
+  questionCountHint: document.querySelector("#questionCountHint"),
   difficulty: document.querySelector("#difficulty"),
   generateBtn: document.querySelector("#generateBtn"),
   paperOutput: document.querySelector("#paperOutput"),
@@ -259,14 +261,16 @@ function init() {
   if (saved) {
     els.paperSelect.value = saved.paperId || "p1";
     state.mode = saved.mode || "topic";
+    state.topicQuestionCount = saved.topicQuestionCount || saved.count || 12;
     els.topicInput.value = saved.topics || getPaper().topics.join("\n");
-    els.questionCount.value = saved.count || 12;
+    els.questionCount.value = state.topicQuestionCount;
     els.difficulty.value = saved.difficulty || "Exam Standard";
   } else {
     els.topicInput.value = getPaper().topics.join("\n");
   }
 
   updateModeButtons();
+  updateQuestionCountControl();
   renderTopicChips();
   renderChecklist();
   renderDashboard();
@@ -280,10 +284,16 @@ function bindEvents() {
     if (getPaper().id === "p6") {
       setMode("ibs");
     }
+    updateQuestionCountControl();
     renderTopicChips();
   });
 
   els.topicInput.addEventListener("input", renderTopicChips);
+  els.questionCount.addEventListener("input", () => {
+    if (!els.questionCount.disabled) {
+      state.topicQuestionCount = clamp(Number(els.questionCount.value) || 12, 3, 40);
+    }
+  });
   els.generateBtn.addEventListener("click", generatePaper);
   els.resetSyllabus.addEventListener("click", () => {
     els.topicInput.value = getPaper().topics.join("\n");
@@ -327,6 +337,7 @@ function setMode(mode) {
     els.topicInput.value = getPaper().topics.join("\n");
   }
   updateModeButtons();
+  updateQuestionCountControl();
   renderTopicChips();
 }
 
@@ -334,6 +345,25 @@ function updateModeButtons() {
   document.querySelectorAll(".segment").forEach((button) => {
     button.classList.toggle("active", button.dataset.mode === state.mode);
   });
+}
+
+function updateQuestionCountControl() {
+  if (state.mode === "topic") {
+    els.questionCount.disabled = false;
+    els.questionCount.value = state.topicQuestionCount;
+    els.questionCountHint.textContent = "Topic Drill uses your selected question count.";
+    return;
+  }
+
+  if (!els.questionCount.disabled) {
+    state.topicQuestionCount = clamp(Number(els.questionCount.value) || 12, 3, 40);
+  }
+  const fixedCount = state.mode === "ibs" || getPaper().id === "p6" ? 30 : 21;
+  els.questionCount.disabled = true;
+  els.questionCount.value = fixedCount;
+  els.questionCountHint.textContent = state.mode === "ibs" || getPaper().id === "p6"
+    ? "Paper 6 is fixed: 5 case studies, each with 5 MCQs and 1 descriptive response."
+    : "Full Paper is fixed: Part I MCQs for 30 marks and Part II has 6 descriptive questions for 70 marks.";
 }
 
 function renderTopicChips() {
@@ -617,17 +647,17 @@ function buildTopicDrill(paper, topics, count, pattern) {
 function buildFullPaper(paper, topics, pattern) {
   if (paper.id === "p6") return buildIbsPaper(paper, topics);
 
-  const mcqs = Array.from({ length: 18 }, (_, i) => makeMcq(paper, pick(topics, i), i + 1, i < 6 ? 1 : 2));
-  const descriptiveMarks = [14, 14, 14, 14, 14];
-  const descriptive = descriptiveMarks.map((marks, i) => makeDescriptive(paper, pick(topics, i + 18), i + 1, marks));
+  const mcqs = Array.from({ length: 15 }, (_, i) => makeMcq(paper, pick(topics, i), i + 1, 2));
+  const descriptiveMarks = [14, 14, 14, 14, 14, 14];
+  const descriptive = descriptiveMarks.map((marks, i) => makeDescriptive(paper, pick(topics, i + 15), i + 1, marks));
   return {
     title: `Full Mock Paper - Paper ${paper.number}: ${paper.title}`,
     modeLabel: "Full Paper",
-    instructions: "Answer Division A for 30 marks. Division B is structured as five descriptive questions of 14 marks each in this generated mock.",
+    instructions: "Part I carries 30 marks of MCQs. Part II carries 70 marks: answer Question 1, which is compulsory, and any 4 out of the remaining 5 questions.",
     questions: [...mcqs, ...descriptive],
     divisions: [
-      { title: "Division A - Case Scenario Based MCQs", note: "30 marks. No negative marking.", ids: mcqs.map((q) => q.id) },
-      { title: "Division B - Descriptive Questions", note: "70 marks. Show workings, assumptions, legal references, and conclusions.", ids: descriptive.map((q) => q.id) }
+      { title: "Part I - MCQs", note: "30 marks. Generated as 15 two-mark MCQs. No negative marking.", ids: mcqs.map((q) => q.id) },
+      { title: "Part II - Descriptive Questions", note: "70 marks. Question 1 is compulsory; attempt any 4 out of Questions 2 to 6. Each question carries 14 marks.", ids: descriptive.map((q) => q.id) }
     ]
   };
 }
@@ -805,7 +835,7 @@ function renderQuestion(question) {
   return `
     <div class="question-card" id="${question.id}">
       <div class="question-head">
-        <h4>Q${question.number}. ${escapeHtml(question.prompt)}</h4>
+        <h4>Q${question.number}. ${escapeHtml(question.prompt)}${question.type !== "mcq" && state.mode === "full" && question.number === 1 ? " <span class=\"required-tag\">Compulsory</span>" : ""}</h4>
         <span class="marks">${question.marks} marks</span>
       </div>
       <div class="scenario">${escapeHtml(question.scenario)}</div>
@@ -881,7 +911,8 @@ function saveState() {
     paperId: els.paperSelect.value,
     mode: state.mode,
     topics: els.topicInput.value,
-    count: els.questionCount.value,
+    count: state.topicQuestionCount,
+    topicQuestionCount: state.topicQuestionCount,
     difficulty: els.difficulty.value
   }));
   els.saveBtn.textContent = "Saved";

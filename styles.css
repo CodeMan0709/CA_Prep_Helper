@@ -290,6 +290,12 @@ textarea {
   padding: 10px 11px;
 }
 
+input:disabled {
+  color: var(--muted);
+  background: #edf0f1;
+  cursor: not-allowed;
+}
+
 textarea {
   min-height: 190px;
   resize: vertical;
@@ -606,6 +612,18 @@ textarea {
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 700;
+}
+
+.required-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 3px 6px;
+  color: var(--accent-strong);
+  background: var(--soft);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  vertical-align: middle;
 }
 
 .scenario {
