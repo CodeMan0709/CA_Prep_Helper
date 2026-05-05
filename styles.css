@@ -324,6 +324,35 @@ textarea {
   width: 100%;
 }
 
+.subjective-response {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px;
+  background: #f7f9f9;
+  border: 1px solid #e7ecee;
+  border-radius: 8px;
+}
+
+.subjective-response .secondary,
+.photo-answer .secondary {
+  width: 100%;
+}
+
+.locked-answer,
+.inline-feedback {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fffaf0;
+  border: 1px solid #f1ddb8;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.locked-answer {
+  color: #73521a;
+}
+
 .two-col {
   display: grid;
   grid-template-columns: 1fr 96px;

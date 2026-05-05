@@ -208,7 +208,12 @@ let state = {
   mode: "topic",
   selectedQuestionId: null,
   generated: [],
-  view: "home"
+  view: "home",
+  submitted: false,
+  currentPaper: null,
+  currentPattern: null,
+  currentGenerated: null,
+  answerDrafts: {}
 };
 
 const els = {
@@ -220,18 +225,11 @@ const els = {
   generateBtn: document.querySelector("#generateBtn"),
   paperOutput: document.querySelector("#paperOutput"),
   paperTitle: document.querySelector("#paperTitle"),
-  gradeBtn: document.querySelector("#gradeBtn"),
-  answerBox: document.querySelector("#answerBox"),
-  answerImage: document.querySelector("#answerImage"),
-  imagePreview: document.querySelector("#imagePreview"),
-  ocrBtn: document.querySelector("#ocrBtn"),
-  ocrStatus: document.querySelector("#ocrStatus"),
-  feedbackPanel: document.querySelector("#feedbackPanel"),
-  feedbackOutput: document.querySelector("#feedbackOutput"),
   resetSyllabus: document.querySelector("#resetSyllabus"),
   saveBtn: document.querySelector("#saveBtn"),
   printBtn: document.querySelector("#printBtn"),
   exportBtn: document.querySelector("#exportBtn"),
+  submitTestBtn: document.querySelector("#submitTestBtn"),
   homeView: document.querySelector("#homeView"),
   mockView: document.querySelector("#mockView"),
   checklistView: document.querySelector("#checklistView"),
@@ -296,12 +294,10 @@ function bindEvents() {
     button.addEventListener("click", () => setMode(button.dataset.mode));
   });
 
-  els.gradeBtn.addEventListener("click", gradeAnswer);
-  els.answerImage.addEventListener("change", handleAnswerImage);
-  els.ocrBtn.addEventListener("click", extractAnswerText);
   els.saveBtn.addEventListener("click", saveState);
   els.printBtn.addEventListener("click", () => window.print());
   els.exportBtn.addEventListener("click", exportHtml);
+  els.submitTestBtn.addEventListener("click", submitCurrentTest);
   els.checklistSearch.addEventListener("input", renderChecklist);
   els.markVisibleBtn.addEventListener("click", markVisibleDone);
   els.clearChecklistBtn.addEventListener("click", clearChecklist);
@@ -470,56 +466,101 @@ function clearChecklist() {
   renderDashboard();
 }
 
-function handleAnswerImage() {
-  const file = els.answerImage.files?.[0];
+function renderSubjectiveAnswerBox(question) {
+  return `
+    <div class="subjective-response" data-response-for="${question.id}">
+      <label for="answer-${question.id}">Your answer</label>
+      <textarea id="answer-${question.id}" class="answer-box question-answer" data-answer-for="${question.id}" placeholder="Type this answer here, or upload a photo and extract text.">${escapeHtml(state.answerDrafts[question.id] || "")}</textarea>
+      <div class="photo-answer">
+        <label for="image-${question.id}">Photo answer</label>
+        <input id="image-${question.id}" type="file" accept="image/*" capture="environment" data-image-for="${question.id}">
+        <div class="image-preview" data-preview-for="${question.id}" hidden></div>
+        <button class="secondary" type="button" data-ocr-for="${question.id}">Extract Text From Photo</button>
+        <p class="hint" data-status-for="${question.id}">On mobile, this opens the camera. Review OCR text before evaluation.</p>
+      </div>
+      <button class="secondary" type="button" data-grade-for="${question.id}">Evaluate This Answer</button>
+      <div class="inline-feedback" data-feedback-for="${question.id}" hidden></div>
+    </div>
+  `;
+}
+
+function bindQuestionAnswerControls() {
+  els.paperOutput.querySelectorAll("[data-image-for]").forEach((input) => {
+    input.addEventListener("change", () => handleQuestionImage(input.dataset.imageFor));
+  });
+  els.paperOutput.querySelectorAll("[data-answer-for]").forEach((textarea) => {
+    textarea.addEventListener("input", () => {
+      state.answerDrafts[textarea.dataset.answerFor] = textarea.value;
+    });
+  });
+  els.paperOutput.querySelectorAll("[data-ocr-for]").forEach((button) => {
+    button.addEventListener("click", () => extractQuestionAnswerText(button.dataset.ocrFor));
+  });
+  els.paperOutput.querySelectorAll("[data-grade-for]").forEach((button) => {
+    button.addEventListener("click", () => gradeQuestionAnswer(button.dataset.gradeFor));
+  });
+}
+
+function handleQuestionImage(questionId) {
+  const input = els.paperOutput.querySelector(`[data-image-for="${cssEscape(questionId)}"]`);
+  const preview = els.paperOutput.querySelector(`[data-preview-for="${cssEscape(questionId)}"]`);
+  const status = els.paperOutput.querySelector(`[data-status-for="${cssEscape(questionId)}"]`);
+  const file = input?.files?.[0];
   if (!file) {
-    els.imagePreview.hidden = true;
-    els.imagePreview.innerHTML = "";
+    if (preview) {
+      preview.hidden = true;
+      preview.innerHTML = "";
+    }
     return;
   }
 
   const url = URL.createObjectURL(file);
-  els.imagePreview.innerHTML = `<img src="${url}" alt="Selected answer photo preview">`;
-  els.imagePreview.hidden = false;
-  els.ocrStatus.textContent = "Photo added. Press Extract Text From Photo to copy handwriting/printed text into the answer box.";
+  preview.innerHTML = `<img src="${url}" alt="Selected answer photo preview">`;
+  preview.hidden = false;
+  status.textContent = "Photo added. Press Extract Text From Photo to copy text into this answer box.";
 }
 
-async function extractAnswerText() {
-  const file = els.answerImage.files?.[0];
+async function extractQuestionAnswerText(questionId) {
+  const input = els.paperOutput.querySelector(`[data-image-for="${cssEscape(questionId)}"]`);
+  const textarea = els.paperOutput.querySelector(`[data-answer-for="${cssEscape(questionId)}"]`);
+  const status = els.paperOutput.querySelector(`[data-status-for="${cssEscape(questionId)}"]`);
+  const button = els.paperOutput.querySelector(`[data-ocr-for="${cssEscape(questionId)}"]`);
+  const file = input?.files?.[0];
   if (!file) {
-    els.ocrStatus.textContent = "Please take or upload an answer photo first.";
+    status.textContent = "Please take or upload an answer photo first.";
     return;
   }
 
   if (!window.Tesseract) {
-    els.ocrStatus.textContent = "OCR library could not load. You can still view the photo and type the answer manually.";
+    status.textContent = "OCR library could not load. You can still view the photo and type the answer manually.";
     return;
   }
 
-  els.ocrBtn.disabled = true;
-  els.ocrStatus.textContent = "Reading the photo. Clear, straight images work best.";
+  button.disabled = true;
+  status.textContent = "Reading the photo. Clear, straight images work best.";
 
   try {
     const result = await Tesseract.recognize(file, "eng", {
       logger: (event) => {
         if (event.status === "recognizing text") {
-          els.ocrStatus.textContent = `Reading text: ${Math.round((event.progress || 0) * 100)}%`;
+          status.textContent = `Reading text: ${Math.round((event.progress || 0) * 100)}%`;
         }
       }
     });
     const text = result?.data?.text?.trim() || "";
     if (!text) {
-      els.ocrStatus.textContent = "I could not detect text clearly. Try a brighter, flatter photo or type the answer manually.";
+      status.textContent = "I could not detect text clearly. Try a brighter, flatter photo or type the answer manually.";
       return;
     }
-    els.answerBox.value = els.answerBox.value.trim()
-      ? `${els.answerBox.value.trim()}\n\n${text}`
+    textarea.value = textarea.value.trim()
+      ? `${textarea.value.trim()}\n\n${text}`
       : text;
-    els.ocrStatus.textContent = "Text extracted into the answer box. Review it once before assessing.";
+    state.answerDrafts[questionId] = textarea.value;
+    status.textContent = "Text extracted into this answer box. Review it once before evaluating.";
   } catch (error) {
-    els.ocrStatus.textContent = "OCR failed in this browser. The photo is still attached for reference; type or paste the answer text to assess.";
+    status.textContent = "OCR failed in this browser. The photo is still attached for reference; type or paste the answer text to evaluate.";
   } finally {
-    els.ocrBtn.disabled = false;
+    button.disabled = false;
   }
 }
 
@@ -530,12 +571,31 @@ function generatePaper() {
   const pattern = state.mode === "ibs" || paper.id === "p6" ? officialPattern.paper6 : officialPattern.papers15;
   const generated = state.mode === "full" ? buildFullPaper(paper, topics, pattern) : state.mode === "ibs" ? buildIbsPaper(paper, topics) : buildTopicDrill(paper, topics, count, pattern);
 
+  state.submitted = false;
+  state.answerDrafts = {};
   state.generated = generated.questions;
   state.selectedQuestionId = generated.questions.find((q) => q.type !== "mcq")?.id || null;
+  state.currentPaper = paper;
+  state.currentPattern = pattern;
+  state.currentGenerated = generated;
   els.paperTitle.textContent = generated.title;
   renderPaper(generated, paper, pattern);
   recordMockAttempt(generated, paper);
   renderDashboard();
+}
+
+function submitCurrentTest() {
+  if (!state.currentGenerated || !state.generated.length) {
+    els.paperOutput.innerHTML = `
+      <div class="empty-state">
+        <h3>No test to submit yet.</h3>
+        <p>Generate a mock test first, then submit it to unlock answers and model points.</p>
+      </div>
+    `;
+    return;
+  }
+  state.submitted = true;
+  renderPaper(state.currentGenerated, state.currentPaper, state.currentPattern);
 }
 
 function buildTopicDrill(paper, topics, count, pattern) {
@@ -704,6 +764,7 @@ function renderPaper(generated, paper, pattern) {
       <h3>${escapeHtml(generated.modeLabel)}</h3>
       <p class="division-note">${escapeHtml(generated.instructions)}</p>
       <p class="division-note"><strong>Syllabus source:</strong> ${escapeHtml(paper.source)}. <strong>Topic base:</strong> ${topics.length} topic(s) currently loaded.</p>
+      <p class="division-note"><strong>Status:</strong> ${state.submitted ? "Submitted. Answers and model points are unlocked." : "In progress. Answers are locked until you submit the test."}</p>
     </section>
   `;
 
@@ -712,13 +773,7 @@ function renderPaper(generated, paper, pattern) {
     : renderDivision({ title: "Generated Questions", note: "Use the answer key and model points after attempting.", ids: generated.questions.map((q) => q.id) }, generated.questions);
 
   els.paperOutput.innerHTML = meta + intro + content;
-  els.paperOutput.querySelectorAll("[data-select-question]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.selectedQuestionId = button.dataset.selectQuestion;
-      els.feedbackPanel.hidden = false;
-      els.feedbackOutput.innerHTML = `<p>Selected question for feedback: <strong>${escapeHtml(button.dataset.topic)}</strong>. Paste the answer and press Assess Answer.</p>`;
-    });
-  });
+  bindQuestionAnswerControls();
 }
 
 function renderDivision(division, questions) {
@@ -735,10 +790,17 @@ function renderDivision(division, questions) {
 function renderQuestion(question) {
   const options = question.type === "mcq"
     ? `<ol class="options" type="A">${question.options.map((option) => `<li>${escapeHtml(option)}</li>`).join("")}</ol>`
-    : `<button class="secondary" data-select-question="${question.id}" data-topic="${escapeHtml(question.topic)}">Use for feedback</button>`;
+    : renderSubjectiveAnswerBox(question);
   const answer = question.type === "mcq"
     ? `<strong>Answer:</strong> ${question.answer}. ${escapeHtml(question.model)}`
     : `<strong>Model answer points:</strong><ul>${question.model.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>`;
+  const answerBlock = state.submitted
+    ? `<details open>
+        <summary>Answer key and rubric</summary>
+        <div class="answer-key">${answer}</div>
+        <div class="rubric"><strong>Rubric:</strong> ${question.rubric.map(escapeHtml).join(" | ")}</div>
+      </details>`
+    : `<div class="locked-answer"><strong>Answers locked.</strong> Submit the test to view the answer key, model points, and rubric.</div>`;
 
   return `
     <div class="question-card" id="${question.id}">
@@ -748,21 +810,20 @@ function renderQuestion(question) {
       </div>
       <div class="scenario">${escapeHtml(question.scenario)}</div>
       ${options}
-      <details>
-        <summary>Answer key and rubric</summary>
-        <div class="answer-key">${answer}</div>
-        <div class="rubric"><strong>Rubric:</strong> ${question.rubric.map(escapeHtml).join(" | ")}</div>
-      </details>
+      ${answerBlock}
     </div>
   `;
 }
 
-function gradeAnswer() {
-  const answer = els.answerBox.value.trim();
-  const question = state.generated.find((item) => item.id === state.selectedQuestionId) || state.generated.find((item) => item.type !== "mcq");
+function gradeQuestionAnswer(questionId) {
+  const textarea = els.paperOutput.querySelector(`[data-answer-for="${cssEscape(questionId)}"]`);
+  const feedback = els.paperOutput.querySelector(`[data-feedback-for="${cssEscape(questionId)}"]`);
+  const answer = textarea?.value.trim() || "";
+  const question = state.generated.find((item) => item.id === questionId);
+  state.answerDrafts[questionId] = textarea?.value || "";
   if (!answer || !question) {
-    els.feedbackPanel.hidden = false;
-    els.feedbackOutput.innerHTML = `<p>Please generate a mock, select a subjective question, and paste an answer first.</p>`;
+    feedback.hidden = false;
+    feedback.innerHTML = `<p>Please type an answer or extract text from a photo before evaluating.</p>`;
     return;
   }
 
@@ -780,8 +841,8 @@ function gradeAnswer() {
     .filter((token) => token.length > 5 && !words.includes(token))
     .slice(0, 8);
 
-  els.feedbackPanel.hidden = false;
-  els.feedbackOutput.innerHTML = `
+  feedback.hidden = false;
+  feedback.innerHTML = `
     <p><strong>Question assessed:</strong> ${escapeHtml(question.topic)} (${question.marks} marks)</p>
     <div class="score-grid">
       <div class="score"><span>Indicative score</span><strong>${Math.round(total * question.marks / 100)}/${question.marks}</strong></div>
@@ -964,6 +1025,11 @@ function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function cssEscape(value) {
+  if (window.CSS?.escape) return CSS.escape(value);
+  return String(value).replaceAll('"', '\\"');
 }
 
 function escapeHtml(value) {

@@ -101,16 +101,7 @@
 
       <section>
         <h2>Answer Feedback</h2>
-        <label for="answerBox">Paste a subjective answer</label>
-        <textarea id="answerBox" class="answer-box" placeholder="Write or paste an answer here, then choose a generated subjective question to assess against."></textarea>
-        <div class="photo-answer">
-          <label for="answerImage">Photo answer</label>
-          <input id="answerImage" type="file" accept="image/*" capture="environment">
-          <div id="imagePreview" class="image-preview" hidden></div>
-          <button id="ocrBtn" class="secondary" type="button">Extract Text From Photo</button>
-          <p id="ocrStatus" class="hint">On mobile, this opens the camera. OCR works in the browser and may need a few seconds.</p>
-        </div>
-        <button id="gradeBtn" class="primary">Assess Answer</button>
+        <p class="hint">Subjective answer boxes and photo upload controls appear below each subjective question after a mock is generated.</p>
       </section>
     </aside>
 
@@ -122,6 +113,7 @@
         </div>
         <div class="toolbar-actions">
           <button id="generateBtn" class="primary">Generate Mock</button>
+          <button id="submitTestBtn" class="secondary">Submit Test</button>
           <button id="exportBtn" class="secondary">Export HTML</button>
         </div>
       </div>
@@ -136,11 +128,6 @@
           <p>Select a paper, edit topics if needed, and generate. The paper includes MCQs, subjective questions, answer keys, model-answer points, and a feedback rubric.</p>
         </div>
       </article>
-
-      <section id="feedbackPanel" class="feedback-panel" hidden>
-        <h2>Feedback</h2>
-        <div id="feedbackOutput"></div>
-      </section>
 
       <section class="sources">
         <h2>Official source links</h2>
