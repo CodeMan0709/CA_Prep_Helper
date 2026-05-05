@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CA Final Mock Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">ICAI CA Final practice builder</p>
+      <h1>Mock Studio</h1>
+    </div>
+    <nav class="top-actions" aria-label="Primary actions">
+      <button class="icon-btn view-toggle active" data-view="mock" title="Mock generator" aria-label="Mock generator">Mock</button>
+      <button class="icon-btn view-toggle" data-view="checklist" title="Preparation checklist" aria-label="Preparation checklist">Checklist</button>
+      <button id="printBtn" class="icon-btn" title="Print paper" aria-label="Print paper">Print</button>
+      <button id="saveBtn" class="icon-btn" title="Save current setup" aria-label="Save current setup">Save</button>
+    </nav>
+  </header>
+
+  <main id="mockView" class="app-shell">
+    <aside class="control-panel" aria-label="Mock test controls">
+      <section>
+        <h2>Paper</h2>
+        <label for="paperSelect">Subject</label>
+        <select id="paperSelect"></select>
+
+        <div class="segmented" role="group" aria-label="Mock mode">
+          <button class="segment active" data-mode="topic">Topic Drill</button>
+          <button class="segment" data-mode="full">Full Paper</button>
+          <button class="segment" data-mode="ibs">Paper 6 IBS</button>
+        </div>
+
+        <div class="two-col">
+          <label>Difficulty
+            <select id="difficulty">
+              <option>Exam Standard</option>
+              <option>Concept Builder</option>
+              <option>Rank Push</option>
+            </select>
+          </label>
+          <label>Questions
+            <input id="questionCount" type="number" min="3" max="40" value="12">
+          </label>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Syllabus & Topics</h2>
+          <button id="resetSyllabus" class="text-btn">Reset</button>
+        </div>
+        <p class="hint">Paste/edit topics, one per line. The default snapshot uses ICAI Final New Scheme headings and should be verified when ICAI posts May 2027 applicability updates.</p>
+        <textarea id="topicInput" spellcheck="false"></textarea>
+        <div id="topicChips" class="chips" aria-label="Detected topics"></div>
+      </section>
+
+      <section>
+        <h2>Answer Feedback</h2>
+        <label for="answerBox">Paste a subjective answer</label>
+        <textarea id="answerBox" class="answer-box" placeholder="Write or paste an answer here, then choose a generated subjective question to assess against."></textarea>
+        <button id="gradeBtn" class="primary">Assess Answer</button>
+      </section>
+    </aside>
+
+    <section class="workspace" aria-live="polite">
+      <div class="paper-toolbar">
+        <div>
+          <p class="eyebrow">Generated original practice paper</p>
+          <h2 id="paperTitle">Ready to generate</h2>
+        </div>
+        <div class="toolbar-actions">
+          <button id="generateBtn" class="primary">Generate Mock</button>
+          <button id="exportBtn" class="secondary">Export HTML</button>
+        </div>
+      </div>
+
+      <div class="notice">
+        <strong>May 2027 readiness:</strong> this app follows the ICAI Final New Scheme pattern available now. Tax law, auditing standards, Ind AS updates, and ICAI applicability announcements must be refreshed before the May 2027 attempt.
+      </div>
+
+      <article id="paperOutput" class="paper-output">
+        <div class="empty-state">
+          <h3>Build a mock test from any syllabus slice.</h3>
+          <p>Select a paper, edit topics if needed, and generate. The paper includes MCQs, subjective questions, answer keys, model-answer points, and a feedback rubric.</p>
+        </div>
+      </article>
+
+      <section id="feedbackPanel" class="feedback-panel" hidden>
+        <h2>Feedback</h2>
+        <div id="feedbackOutput"></div>
+      </section>
+
+      <section class="sources">
+        <h2>Official source links</h2>
+        <a href="https://www.icai.org/post/final-nset" target="_blank" rel="noreferrer">ICAI Final Course - New Scheme</a>
+        <a href="https://www.icai.org/post/question-papers-final-course" target="_blank" rel="noreferrer">ICAI CA Final question papers archive</a>
+        <a href="https://www.icai.org/post/sugg-ans-final-jan2026" target="_blank" rel="noreferrer">ICAI suggested answers archive</a>
+        <a href="https://www.icai.org/post/bos-14012024" target="_blank" rel="noreferrer">ICAI Paper 6 open-book pattern announcement</a>
+        <a href="https://boslive.icai.org/education_content_study_material_new_scheme.php?c=final" target="_blank" rel="noreferrer">ICAI BoS study material portal</a>
+      </section>
+    </section>
+  </main>
+
+  <main id="checklistView" class="checklist-page" hidden>
+    <section class="checklist-hero">
+      <div>
+        <p class="eyebrow">Preparation tracker</p>
+        <h2>CA Final Topic Checklist</h2>
+        <p>Tick topics as they are prepared. Progress is saved in this browser, so it stays available on GitHub Pages without a login.</p>
+      </div>
+      <div class="checklist-actions">
+        <button id="markVisibleBtn" class="primary compact">Mark Visible Done</button>
+        <button id="clearChecklistBtn" class="secondary">Clear Ticks</button>
+      </div>
+    </section>
+
+    <section class="checklist-summary" aria-label="Checklist progress">
+      <div class="score">
+        <span>Total Progress</span>
+        <strong id="overallProgress">0%</strong>
+      </div>
+      <div class="score">
+        <span>Topics Done</span>
+        <strong id="topicsDone">0/0</strong>
+      </div>
+      <div class="score">
+        <span>Group I</span>
+        <strong id="groupOneProgress">0%</strong>
+      </div>
+      <div class="score">
+        <span>Group II</span>
+        <strong id="groupTwoProgress">0%</strong>
+      </div>
+    </section>
+
+    <section class="checklist-filter">
+      <label for="checklistSearch">Search topics</label>
+      <input id="checklistSearch" type="search" placeholder="Search by subject or topic">
+    </section>
+
+    <section id="checklistOutput" class="checklist-output" aria-live="polite"></section>
+  </main>
+
+  <template id="questionTemplate">
+    <section class="question-card"></section>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
