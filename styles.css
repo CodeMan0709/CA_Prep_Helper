@@ -1,3 +1,9 @@
+[data-theme="dark"] {
+  --bg-color: #0f172a;
+  --text-color: #e5e7eb;
+  --card-color: #1e293b;
+}
+
 :root {
   --bg: #f3f7f7;
   --panel: #ffffff;
