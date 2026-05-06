@@ -1077,6 +1077,7 @@ const toggleBtn = document.getElementById("theme-toggle");
 // Load saved theme
 if (localStorage.getItem("theme") === "dark") {
   document.documentElement.setAttribute("data-theme", "dark");
+  toggleBtn.textContent = "☀️";
 }
 
 // Toggle
@@ -1086,9 +1087,11 @@ toggleBtn.addEventListener("click", () => {
   if (isDark) {
     document.documentElement.removeAttribute("data-theme");
     localStorage.setItem("theme", "light");
+    toggleBtn.textContent = "🌙";
   } else {
     document.documentElement.setAttribute("data-theme", "dark");
     localStorage.setItem("theme", "dark");
+    toggleBtn.textContent = "☀️";
   }
 });
 

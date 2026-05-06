@@ -1,7 +1,72 @@
 [data-theme="dark"] {
-  --bg-color: #0f172a;
-  --text-color: #e5e7eb;
-  --card-color: #1e293b;
+  --bg: #0f172a;
+  --ink: #e5e7eb;
+  --panel: #1e293b;
+  --muted: #94a3b8;
+  --line: #334155;
+  --soft: #1e3a4c;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .dashboard-card,
+[data-theme="dark"] .control-panel,
+[data-theme="dark"] .checklist-filter,
+[data-theme="dark"] .subject-checklist,
+[data-theme="dark"] select,
+[data-theme="dark"] input:not([type="checkbox"]),
+[data-theme="dark"] textarea {
+  background: #1e293b;
+  color: #e5e7eb;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .history-item,
+[data-theme="dark"] .scenario,
+[data-theme="dark"] .subjective-response,
+[data-theme="dark"] .image-preview,
+[data-theme="dark"] .score {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .secondary,
+[data-theme="dark"] .icon-btn {
+  background: #1e293b;
+  color: #e5e7eb;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .meta-cell,
+[data-theme="dark"] .subject-checklist header {
+  background: #172033;
+}
+
+[data-theme="dark"] .topic-item {
+  background: #1e293b;
+}
+
+[data-theme="dark"] .bar-track {
+  background: #334155;
+}
+
+[data-theme="dark"] .segmented {
+  background: #334155;
+}
+
+[data-theme="dark"] .options li {
+  background: #172033;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .notice {
+  color: #cbd5e1;
+  background: #1e293b;
+}
+
+[data-theme="dark"] input:disabled {
+  background: #0f172a;
+  color: #94a3b8;
 }
 
 :root {
