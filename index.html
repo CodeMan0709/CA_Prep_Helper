@@ -16,6 +16,7 @@
       <button class="icon-btn view-toggle active" data-view="home" title="Dashboard" aria-label="Dashboard">Home</button>
       <button class="icon-btn view-toggle" data-view="mock" title="Mock generator" aria-label="Mock generator">Mock</button>
       <button class="icon-btn view-toggle" data-view="checklist" title="Preparation checklist" aria-label="Preparation checklist">Checklist</button>
+      <button class="icon-btn view-toggle" data-view="past" title="Past paper question bank" aria-label="Past paper question bank">Past Papers</button>
       <button id="printBtn" class="icon-btn" title="Print paper" aria-label="Print paper">Print</button>
       <button id="saveBtn" class="icon-btn" title="Save current setup" aria-label="Save current setup">Save</button>
     </nav>
@@ -43,6 +44,11 @@
         <span>Checklist</span>
         <strong>Track preparation</strong>
         <small>Tick every paper topic and monitor Group I, Group II, and overall completion.</small>
+      </button>
+      <button class="feature-card" data-view="past" type="button">
+        <span>Past Papers</span>
+        <strong>Build chapter-wise actuals</strong>
+        <small>Add, import, filter, and revise ICAI past-paper questions by subject, chapter, attempt, and marks.</small>
       </button>
     </section>
 
@@ -179,6 +185,99 @@
     </section>
 
     <section id="checklistOutput" class="checklist-output" aria-live="polite"></section>
+  </main>
+
+  <main id="pastView" class="past-page app-view" hidden>
+    <section class="checklist-hero">
+      <div>
+        <p class="eyebrow">Actual ICAI question bank</p>
+        <h2>Chapter-Wise Past Papers</h2>
+        <p>Organize the last 10 years of ICAI Final questions by paper and chapter. The app stores entries in this browser and keeps official source links beside them.</p>
+      </div>
+      <div class="checklist-actions">
+        <button id="exportPastBtn" class="primary compact">Export JSON</button>
+        <label class="file-action" for="importPastInput">Import JSON</label>
+        <input id="importPastInput" type="file" accept="application/json,.json" hidden>
+      </div>
+    </section>
+
+    <section class="notice">
+      <strong>Copyright-safe workflow:</strong> this tab does not ship copied ICAI question text. Add questions manually from official papers, or import your own JSON question bank. Official ICAI archives are linked below.
+    </section>
+
+    <section class="past-layout">
+      <aside class="past-panel">
+        <h2>Add Actual Question</h2>
+        <label for="pastPaperSelect">Subject</label>
+        <select id="pastPaperSelect"></select>
+
+        <label for="pastChapterSelect">Chapter</label>
+        <select id="pastChapterSelect"></select>
+
+        <div class="two-col">
+          <label>Attempt
+            <select id="pastAttemptSelect"></select>
+          </label>
+          <label>Marks
+            <input id="pastMarksInput" type="number" min="1" max="30" value="14">
+          </label>
+        </div>
+
+        <div class="two-col">
+          <label>Question No.
+            <input id="pastQuestionNoInput" type="text" placeholder="Q1(a)">
+          </label>
+          <label>Type
+            <select id="pastTypeSelect">
+              <option>Descriptive</option>
+              <option>MCQ</option>
+              <option>Case Study</option>
+            </select>
+          </label>
+        </div>
+
+        <label for="pastSourceInput">Official source link</label>
+        <input id="pastSourceInput" type="url" value="https://www.icai.org/post/question-papers-final-course">
+
+        <label for="pastQuestionInput">Question text</label>
+        <textarea id="pastQuestionInput" placeholder="Paste one actual ICAI question here for private study use."></textarea>
+
+        <label for="pastAnswerInput">Answer notes / reference</label>
+        <textarea id="pastAnswerInput" placeholder="Paste short answer notes, suggested-answer reference, or your own solution notes."></textarea>
+
+        <button id="addPastQuestionBtn" class="primary">Add Question</button>
+      </aside>
+
+      <section class="past-workspace">
+        <div class="paper-toolbar">
+          <div>
+            <p class="eyebrow">Filter and revise</p>
+            <h2 id="pastTitle">Past-paper bank</h2>
+          </div>
+        </div>
+
+        <section class="past-filters">
+          <label for="pastFilterPaper">Subject</label>
+          <select id="pastFilterPaper"></select>
+          <label for="pastFilterChapter">Chapter</label>
+          <select id="pastFilterChapter"></select>
+          <label for="pastFilterAttempt">Attempt</label>
+          <select id="pastFilterAttempt"></select>
+          <label for="pastSearch">Search</label>
+          <input id="pastSearch" type="search" placeholder="Search question text or notes">
+        </section>
+
+        <section class="sources">
+          <h2>Official ICAI sources</h2>
+          <a href="https://www.icai.org/post/question-papers-final-course" target="_blank" rel="noreferrer">Final Course question papers</a>
+          <a href="https://www.icai.org/post/old-suggested-answers" target="_blank" rel="noreferrer">Old suggested answers</a>
+          <a href="https://www.icai.org/post/sugg-ans-final-may2025" target="_blank" rel="noreferrer">Suggested answers archive example</a>
+        </section>
+
+        <section id="pastSummary" class="checklist-summary" aria-label="Past paper question counts"></section>
+        <section id="pastOutput" class="past-output" aria-live="polite"></section>
+      </section>
+    </section>
   </main>
 
   <template id="questionTemplate">

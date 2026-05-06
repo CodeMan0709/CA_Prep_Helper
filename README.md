@@ -11,6 +11,7 @@ A static GitHub Pages-friendly preparation dashboard and mock test generator for
 - Provides per-subjective-question answer text boxes, photo upload/camera input, OCR extraction, and rubric-based feedback.
 - Lets you paste or edit the syllabus/topic list for May 2027 updates.
 - Includes a preparation checklist for all subjects and topics, saved in the browser.
+- Includes a Past Papers tab for building a chapter-wise actual ICAI question bank across all subjects and chapters.
 - Runs fully in the browser with no backend, database, or paid API.
 
 ## Mock test patterns
@@ -29,6 +30,27 @@ A static GitHub Pages-friendly preparation dashboard and mock test generator for
   - Actual exam pattern requires attempting any 4 case studies.
 
 The custom question count control is enabled only for Topic Drill. Full Paper and Paper 6 use fixed counts so they stay aligned to the exam pattern.
+
+## Past Papers tab
+
+The Past Papers tab is designed for chapter-wise revision from actual ICAI Final papers:
+
+- Covers all 6 CA Final papers and all chapter/topic headings already present in the app.
+- Provides attempt options for the last 10 years, including recent New Scheme attempts and older Final attempts.
+- Lets you add each actual ICAI question with:
+  - paper
+  - chapter
+  - attempt
+  - question number
+  - type
+  - marks
+  - official source link
+  - question text
+  - answer notes/reference
+- Supports filtering by subject, chapter, attempt, and search text.
+- Supports JSON export/import so the question bank can be backed up or moved between browsers.
+
+The repository does not ship copied ICAI question text. Add questions manually from official ICAI PDFs or import your own private JSON question bank.
 
 ## Deploy free on GitHub Pages
 

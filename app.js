@@ -184,6 +184,15 @@ const papers = [
   }
 ];
 
+const pastAttempts = [
+  "January 2026", "September 2025", "May 2025", "November 2024", "May 2024",
+  "November 2023", "May 2023", "November 2022", "May 2022", "December 2021",
+  "July 2021", "January 2021", "November 2020", "November 2019", "May 2019",
+  "November 2018", "May 2018", "November 2017", "May 2017", "November 2016", "May 2016"
+];
+
+const officialPastPaperUrl = "https://www.icai.org/post/question-papers-final-course";
+
 const questionStems = {
   mcq: [
     "In the given scenario, which treatment is most appropriate for {topic}?",
@@ -235,6 +244,7 @@ const els = {
   homeView: document.querySelector("#homeView"),
   mockView: document.querySelector("#mockView"),
   checklistView: document.querySelector("#checklistView"),
+  pastView: document.querySelector("#pastView"),
   homeProgress: document.querySelector("#homeProgress"),
   homeProgressBars: document.querySelector("#homeProgressBars"),
   mockHistory: document.querySelector("#mockHistory"),
@@ -246,7 +256,26 @@ const els = {
   groupOneProgress: document.querySelector("#groupOneProgress"),
   groupTwoProgress: document.querySelector("#groupTwoProgress"),
   markVisibleBtn: document.querySelector("#markVisibleBtn"),
-  clearChecklistBtn: document.querySelector("#clearChecklistBtn")
+  clearChecklistBtn: document.querySelector("#clearChecklistBtn"),
+  pastPaperSelect: document.querySelector("#pastPaperSelect"),
+  pastChapterSelect: document.querySelector("#pastChapterSelect"),
+  pastAttemptSelect: document.querySelector("#pastAttemptSelect"),
+  pastMarksInput: document.querySelector("#pastMarksInput"),
+  pastQuestionNoInput: document.querySelector("#pastQuestionNoInput"),
+  pastTypeSelect: document.querySelector("#pastTypeSelect"),
+  pastSourceInput: document.querySelector("#pastSourceInput"),
+  pastQuestionInput: document.querySelector("#pastQuestionInput"),
+  pastAnswerInput: document.querySelector("#pastAnswerInput"),
+  addPastQuestionBtn: document.querySelector("#addPastQuestionBtn"),
+  exportPastBtn: document.querySelector("#exportPastBtn"),
+  importPastInput: document.querySelector("#importPastInput"),
+  pastFilterPaper: document.querySelector("#pastFilterPaper"),
+  pastFilterChapter: document.querySelector("#pastFilterChapter"),
+  pastFilterAttempt: document.querySelector("#pastFilterAttempt"),
+  pastSearch: document.querySelector("#pastSearch"),
+  pastSummary: document.querySelector("#pastSummary"),
+  pastOutput: document.querySelector("#pastOutput"),
+  pastTitle: document.querySelector("#pastTitle")
 };
 
 function init() {
@@ -256,6 +285,7 @@ function init() {
     option.textContent = `Paper ${paper.number}: ${paper.title}`;
     els.paperSelect.appendChild(option);
   });
+  populatePastPaperControls();
 
   const saved = loadSavedState();
   if (saved) {
@@ -273,6 +303,7 @@ function init() {
   updateQuestionCountControl();
   renderTopicChips();
   renderChecklist();
+  renderPastPapers();
   renderDashboard();
   setView("home");
   bindEvents();
@@ -311,6 +342,17 @@ function bindEvents() {
   els.checklistSearch.addEventListener("input", renderChecklist);
   els.markVisibleBtn.addEventListener("click", markVisibleDone);
   els.clearChecklistBtn.addEventListener("click", clearChecklist);
+  els.pastPaperSelect.addEventListener("change", () => syncPastChapterOptions("entry"));
+  els.pastFilterPaper.addEventListener("change", () => {
+    syncPastChapterOptions("filter");
+    renderPastPapers();
+  });
+  els.pastFilterChapter.addEventListener("change", renderPastPapers);
+  els.pastFilterAttempt.addEventListener("change", renderPastPapers);
+  els.pastSearch.addEventListener("input", renderPastPapers);
+  els.addPastQuestionBtn.addEventListener("click", addPastQuestion);
+  els.exportPastBtn.addEventListener("click", exportPastQuestions);
+  els.importPastInput.addEventListener("change", importPastQuestions);
   document.querySelectorAll(".view-toggle").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.view));
   });
@@ -388,10 +430,12 @@ function setView(view) {
   els.homeView.hidden = view !== "home";
   els.mockView.hidden = view !== "mock";
   els.checklistView.hidden = view !== "checklist";
+  els.pastView.hidden = view !== "past";
   document.querySelectorAll(".view-toggle").forEach((button) => {
     button.classList.toggle("active", button.dataset.view === view);
   });
   if (view === "checklist") renderChecklist();
+  if (view === "past") renderPastPapers();
   if (view === "home") renderDashboard();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -494,6 +538,165 @@ function clearChecklist() {
   saveChecklist({});
   renderChecklist();
   renderDashboard();
+}
+
+function populatePastPaperControls() {
+  const paperOptions = papers.map((paper) => `<option value="${paper.id}">Paper ${paper.number}: ${escapeHtml(paper.title)}</option>`).join("");
+  els.pastPaperSelect.innerHTML = paperOptions;
+  els.pastFilterPaper.innerHTML = `<option value="all">All subjects</option>${paperOptions}`;
+
+  const attemptOptions = pastAttempts.map((attempt) => `<option value="${escapeHtml(attempt)}">${escapeHtml(attempt)}</option>`).join("");
+  els.pastAttemptSelect.innerHTML = attemptOptions;
+  els.pastFilterAttempt.innerHTML = `<option value="all">All attempts</option>${attemptOptions}`;
+
+  syncPastChapterOptions("entry");
+  syncPastChapterOptions("filter");
+}
+
+function syncPastChapterOptions(scope) {
+  const paperId = scope === "entry" ? els.pastPaperSelect.value : els.pastFilterPaper.value;
+  const select = scope === "entry" ? els.pastChapterSelect : els.pastFilterChapter;
+  const topics = paperId === "all"
+    ? papers.flatMap((paper) => paper.topics)
+    : (papers.find((paper) => paper.id === paperId)?.topics || []);
+  const uniqueTopics = unique(topics);
+  select.innerHTML = `${scope === "filter" ? '<option value="all">All chapters</option>' : ""}${uniqueTopics.map((topic) => `<option value="${escapeHtml(topic)}">${escapeHtml(topic)}</option>`).join("")}`;
+}
+
+function getPastQuestions() {
+  try {
+    const items = JSON.parse(localStorage.getItem("ca-final-past-questions"));
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePastQuestions(items) {
+  localStorage.setItem("ca-final-past-questions", JSON.stringify(items));
+}
+
+function addPastQuestion() {
+  const paper = papers.find((item) => item.id === els.pastPaperSelect.value);
+  const questionText = els.pastQuestionInput.value.trim();
+  if (!paper || !questionText) {
+    els.pastOutput.innerHTML = `<div class="empty-state"><h3>Add question text first.</h3><p>Select a paper/chapter and paste one actual question before adding it.</p></div>`;
+    return;
+  }
+
+  const items = getPastQuestions();
+  items.unshift({
+    id: `past-${Date.now()}`,
+    paperId: paper.id,
+    paperTitle: paper.title,
+    paperNumber: paper.number,
+    chapter: els.pastChapterSelect.value,
+    attempt: els.pastAttemptSelect.value,
+    marks: Number(els.pastMarksInput.value) || 0,
+    questionNo: els.pastQuestionNoInput.value.trim(),
+    type: els.pastTypeSelect.value,
+    source: els.pastSourceInput.value.trim() || officialPastPaperUrl,
+    question: questionText,
+    answer: els.pastAnswerInput.value.trim(),
+    addedAt: new Date().toISOString()
+  });
+  savePastQuestions(items);
+  els.pastQuestionInput.value = "";
+  els.pastAnswerInput.value = "";
+  els.pastQuestionNoInput.value = "";
+  renderPastPapers();
+}
+
+function renderPastPapers() {
+  const items = filterPastQuestions();
+  const totalMarks = items.reduce((sum, item) => sum + (Number(item.marks) || 0), 0);
+  const chapterCount = unique(items.map((item) => item.chapter)).length;
+  els.pastTitle.textContent = `${items.length} saved question${items.length === 1 ? "" : "s"}`;
+  els.pastSummary.innerHTML = [
+    ["Questions", items.length],
+    ["Chapters", chapterCount],
+    ["Marks", totalMarks],
+    ["Attempts", unique(items.map((item) => item.attempt)).length]
+  ].map(([label, value]) => `<div class="score"><span>${label}</span><strong>${value}</strong></div>`).join("");
+
+  if (!items.length) {
+    els.pastOutput.innerHTML = `
+      <div class="empty-state">
+        <h3>No past-paper questions saved yet.</h3>
+        <p>Add questions manually from ICAI PDFs or import your own JSON bank. The filters are already mapped to all CA Final papers and chapters.</p>
+      </div>
+    `;
+    return;
+  }
+
+  els.pastOutput.innerHTML = items.map(renderPastQuestion).join("");
+  els.pastOutput.querySelectorAll("[data-delete-past]").forEach((button) => {
+    button.addEventListener("click", () => deletePastQuestion(button.dataset.deletePast));
+  });
+}
+
+function filterPastQuestions() {
+  const paperId = els.pastFilterPaper.value;
+  const chapter = els.pastFilterChapter.value;
+  const attempt = els.pastFilterAttempt.value;
+  const search = els.pastSearch.value.trim().toLowerCase();
+  return getPastQuestions().filter((item) => {
+    if (paperId !== "all" && item.paperId !== paperId) return false;
+    if (chapter !== "all" && item.chapter !== chapter) return false;
+    if (attempt !== "all" && item.attempt !== attempt) return false;
+    const haystack = `${item.paperTitle} ${item.chapter} ${item.attempt} ${item.questionNo} ${item.type} ${item.question} ${item.answer}`.toLowerCase();
+    return !search || haystack.includes(search);
+  });
+}
+
+function renderPastQuestion(item) {
+  return `
+    <article class="past-question-card">
+      <header>
+        <div>
+          <h3>Paper ${item.paperNumber}: ${escapeHtml(item.paperTitle)} ${item.questionNo ? `- ${escapeHtml(item.questionNo)}` : ""}</h3>
+          <div class="past-meta">${escapeHtml(item.chapter)} | ${escapeHtml(item.attempt)} | ${escapeHtml(item.type)} | ${Number(item.marks) || 0} marks</div>
+        </div>
+        <button class="secondary" type="button" data-delete-past="${escapeHtml(item.id)}">Delete</button>
+      </header>
+      <p class="past-text">${escapeHtml(item.question)}</p>
+      ${item.answer ? `<details><summary>Answer notes</summary><div class="answer-key">${escapeHtml(item.answer)}</div></details>` : ""}
+      <p class="past-meta"><a href="${escapeHtml(item.source || officialPastPaperUrl)}" target="_blank" rel="noreferrer">Official source</a> | Added ${formatDate(item.addedAt)}</p>
+    </article>
+  `;
+}
+
+function deletePastQuestion(id) {
+  savePastQuestions(getPastQuestions().filter((item) => item.id !== id));
+  renderPastPapers();
+}
+
+function exportPastQuestions() {
+  const blob = new Blob([JSON.stringify(getPastQuestions(), null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ca-final-past-question-bank.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importPastQuestions() {
+  const file = els.importPastInput.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      const imported = JSON.parse(String(reader.result));
+      if (!Array.isArray(imported)) throw new Error("Expected an array");
+      const existing = getPastQuestions();
+      savePastQuestions([...imported, ...existing].slice(0, 2000));
+      renderPastPapers();
+    } catch {
+      els.pastOutput.innerHTML = `<div class="empty-state"><h3>Import failed.</h3><p>Please import a JSON array exported from this app.</p></div>`;
+    }
+  });
+  reader.readAsText(file);
 }
 
 function renderSubjectiveAnswerBox(question) {
