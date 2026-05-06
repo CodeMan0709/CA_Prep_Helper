@@ -26,6 +26,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0f172a;
   --panel: #1e293b;
   --panel-alt: #172033;
@@ -35,6 +36,7 @@
   --line: #334155;
   --line-subtle: #334155;
   --line-inner: #2d3f55;
+  --accent-strong: #5eead4;
   --soft: #1a3040;
   --chip-border: #1e4a47;
   --shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
