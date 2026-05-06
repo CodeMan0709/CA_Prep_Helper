@@ -132,6 +132,33 @@
   --locked-text: #7a4010;
 }
 
+[data-theme="yellow"] {
+  color-scheme: light;
+  --bg: #fefce8;
+  --panel: #fffff5;
+  --panel-alt: #fef9c3;
+  --panel-subtle: #fef3c7;
+  --ink: #1c1400;
+  --muted: #926a0a;
+  --line: #fde68a;
+  --line-subtle: #fcd34d;
+  --line-inner: #fef08a;
+  --accent: #d97706;
+  --accent-strong: #b45309;
+  --gold: #d97706;
+  --soft: #fef3c7;
+  --chip-border: #fcd34d;
+  --shadow: 0 12px 30px rgba(180, 130, 0, 0.12);
+  --hero-bg: #78350f;
+  --segmented-bg: #fef08a;
+  --disabled-bg: #fef9c3;
+  --topic-gap: #fde68a;
+  --warm-bg: #fffde7;
+  --warm-border: #fde68a;
+  --notice-text: #3d2a00;
+  --locked-text: #92400e;
+}
+
 * {
   box-sizing: border-box;
 }

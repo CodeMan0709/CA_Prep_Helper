@@ -1080,7 +1080,8 @@ const THEMES = [
   { key: "dark",     icon: "🌙",  label: "Dark"     },
   { key: "midnight", icon: "🌑",  label: "Midnight" },
   { key: "forest",   icon: "🌿",  label: "Forest"   },
-  { key: "sepia",    icon: "📜",  label: "Sepia"    }
+  { key: "sepia",    icon: "📜",  label: "Sepia"    },
+  { key: "yellow",   icon: "🌻",  label: "Yellow"   }
 ];
 
 const toggleBtn = document.getElementById("theme-toggle");
