@@ -274,6 +274,7 @@ function init() {
   renderTopicChips();
   renderChecklist();
   renderDashboard();
+  renderStreak();
   setView("home");
   bindEvents();
 }
@@ -445,6 +446,7 @@ function renderChecklist() {
       const next = getChecklist();
       next[input.dataset.key] = input.checked;
       saveChecklist(next);
+      if (input.checked) updateStreak();
       renderChecklist();
       renderDashboard();
     });
@@ -601,6 +603,7 @@ function generatePaper() {
   const pattern = state.mode === "ibs" || paper.id === "p6" ? officialPattern.paper6 : officialPattern.papers15;
   const generated = state.mode === "full" ? buildFullPaper(paper, topics, pattern) : state.mode === "ibs" ? buildIbsPaper(paper, topics) : buildTopicDrill(paper, topics, count, pattern);
 
+  updateStreak();
   state.submitted = false;
   state.answerDrafts = {};
   state.generated = generated.questions;
@@ -1072,28 +1075,68 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+const THEMES = [
+  { key: "light",    icon: "☀️",  label: "Light"    },
+  { key: "dark",     icon: "🌙",  label: "Dark"     },
+  { key: "midnight", icon: "🌑",  label: "Midnight" },
+  { key: "forest",   icon: "🌿",  label: "Forest"   },
+  { key: "sepia",    icon: "📜",  label: "Sepia"    }
+];
+
 const toggleBtn = document.getElementById("theme-toggle");
 
-// Load saved theme
-if (localStorage.getItem("theme") === "dark") {
-  document.documentElement.setAttribute("data-theme", "dark");
-  toggleBtn.textContent = "☀️";
+function applyTheme(key) {
+  if (key === "light") {
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", key);
+  }
+  localStorage.setItem("theme", key);
+  const idx = THEMES.findIndex((t) => t.key === key);
+  const next = THEMES[(idx + 1) % THEMES.length];
+  toggleBtn.textContent = THEMES[idx].icon;
+  toggleBtn.title = `Theme: ${THEMES[idx].label} — click for ${next.label}`;
 }
 
-// Toggle
-toggleBtn.addEventListener("click", () => {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+applyTheme(localStorage.getItem("theme") || "light");
 
-  if (isDark) {
-    document.documentElement.removeAttribute("data-theme");
-    localStorage.setItem("theme", "light");
-    toggleBtn.textContent = "🌙";
-  } else {
-    document.documentElement.setAttribute("data-theme", "dark");
-    localStorage.setItem("theme", "dark");
-    toggleBtn.textContent = "☀️";
-  }
+toggleBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  const idx = THEMES.findIndex((t) => t.key === current);
+  applyTheme(THEMES[(idx + 1) % THEMES.length].key);
 });
+
+function getStreak() {
+  try {
+    return JSON.parse(localStorage.getItem("ca-final-streak")) || { count: 0, lastDate: null };
+  } catch {
+    return { count: 0, lastDate: null };
+  }
+}
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  const data = getStreak();
+  if (data.lastDate === today) return;
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  data.count = data.lastDate === yesterday.toDateString() ? data.count + 1 : 1;
+  data.lastDate = today;
+  localStorage.setItem("ca-final-streak", JSON.stringify(data));
+  renderStreak();
+}
+
+function renderStreak() {
+  const badge = document.getElementById("streakBadge");
+  if (!badge) return;
+  const { count } = getStreak();
+  if (count > 0) {
+    badge.textContent = `🔥 ${count} day${count === 1 ? "" : "s"} streak`;
+    badge.hidden = false;
+  } else {
+    badge.hidden = true;
+  }
+}
 
 
 init();

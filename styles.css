@@ -27,6 +27,7 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
+  /* slate/navy — default dark */
   --bg: #0f172a;
   --panel: #1e293b;
   --panel-alt: #172033;
@@ -48,6 +49,87 @@
   --warm-border: #2d4a30;
   --notice-text: #cbd5e1;
   --locked-text: #d4a853;
+}
+
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --bg: #050508;
+  --panel: #0f0f16;
+  --panel-alt: #0a0a10;
+  --panel-subtle: #0a0a10;
+  --ink: #f0f0ff;
+  --muted: #6060a0;
+  --line: #1c1c30;
+  --line-subtle: #16162a;
+  --line-inner: #141424;
+  --accent: #818cf8;
+  --accent-strong: #a5b4fc;
+  --gold: #fbbf24;
+  --soft: #0e0e22;
+  --chip-border: #1e1e40;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.95);
+  --hero-bg: #020204;
+  --segmented-bg: #18182e;
+  --disabled-bg: #0a0a12;
+  --topic-gap: #18182e;
+  --warm-bg: #181408;
+  --warm-border: #383010;
+  --notice-text: #c0c0e0;
+  --locked-text: #fbbf24;
+}
+
+[data-theme="forest"] {
+  color-scheme: dark;
+  --bg: #091410;
+  --panel: #0e1f17;
+  --panel-alt: #091a12;
+  --panel-subtle: #091a12;
+  --ink: #d0eedd;
+  --muted: #4e8a62;
+  --line: #163622;
+  --line-subtle: #122c1c;
+  --line-inner: #0f2418;
+  --accent: #22c55e;
+  --accent-strong: #6ee680;
+  --gold: #fbbf24;
+  --soft: #0e1f15;
+  --chip-border: #163622;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+  --hero-bg: #040c07;
+  --segmented-bg: #163622;
+  --disabled-bg: #091410;
+  --topic-gap: #163622;
+  --warm-bg: #161a08;
+  --warm-border: #383a10;
+  --notice-text: #88c8a0;
+  --locked-text: #fbbf24;
+}
+
+[data-theme="sepia"] {
+  color-scheme: light;
+  --bg: #f2e8d4;
+  --panel: #faf4e6;
+  --panel-alt: #f0e6d0;
+  --panel-subtle: #ecdfc8;
+  --ink: #2c1a06;
+  --muted: #8a6848;
+  --line: #d4b890;
+  --line-subtle: #c8a87a;
+  --line-inner: #dcc8a4;
+  --accent: #8b4513;
+  --accent-strong: #6b3010;
+  --gold: #b7791f;
+  --soft: #ecdfc8;
+  --chip-border: #c8a87a;
+  --shadow: 0 12px 30px rgba(44, 26, 6, 0.10);
+  --hero-bg: #2c1a06;
+  --segmented-bg: #e6d4b4;
+  --disabled-bg: #e6d8c4;
+  --topic-gap: #d4b890;
+  --warm-bg: #fffaee;
+  --warm-border: #e8cc88;
+  --notice-text: #4a2c10;
+  --locked-text: #7a4010;
 }
 
 * {
@@ -104,6 +186,17 @@ button {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.streak-badge {
+  padding: 5px 12px;
+  background: rgba(245, 196, 107, 0.15);
+  border: 1px solid rgba(245, 196, 107, 0.35);
+  border-radius: 999px;
+  color: #f5c46b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .top-actions,
