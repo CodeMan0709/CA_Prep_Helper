@@ -318,7 +318,7 @@ label {
 }
 
 select,
-input,
+input:not([type="checkbox"]):not([type="file"]),
 textarea {
   width: 100%;
   color: var(--ink);
@@ -328,7 +328,7 @@ textarea {
   padding: 10px 11px;
 }
 
-input:disabled {
+input:not([type="checkbox"]):not([type="file"]):disabled {
   color: var(--muted);
   background: var(--disabled-bg);
   cursor: not-allowed;
