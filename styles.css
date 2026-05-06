@@ -1,86 +1,51 @@
-[data-theme="dark"] {
-  --bg: #0f172a;
-  --ink: #e5e7eb;
-  --panel: #1e293b;
-  --muted: #94a3b8;
-  --line: #334155;
-  --soft: #1e3a4c;
-  --shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-}
-
-[data-theme="dark"] .feature-card,
-[data-theme="dark"] .dashboard-card,
-[data-theme="dark"] .control-panel,
-[data-theme="dark"] .checklist-filter,
-[data-theme="dark"] .subject-checklist,
-[data-theme="dark"] select,
-[data-theme="dark"] input:not([type="checkbox"]),
-[data-theme="dark"] textarea {
-  background: #1e293b;
-  color: #e5e7eb;
-  border-color: #334155;
-}
-
-[data-theme="dark"] .history-item,
-[data-theme="dark"] .scenario,
-[data-theme="dark"] .subjective-response,
-[data-theme="dark"] .image-preview,
-[data-theme="dark"] .score {
-  background: #0f172a;
-  border-color: #334155;
-}
-
-[data-theme="dark"] .secondary,
-[data-theme="dark"] .icon-btn {
-  background: #1e293b;
-  color: #e5e7eb;
-  border-color: #334155;
-}
-
-[data-theme="dark"] .meta-cell,
-[data-theme="dark"] .subject-checklist header {
-  background: #172033;
-}
-
-[data-theme="dark"] .topic-item {
-  background: #1e293b;
-}
-
-[data-theme="dark"] .bar-track {
-  background: #334155;
-}
-
-[data-theme="dark"] .segmented {
-  background: #334155;
-}
-
-[data-theme="dark"] .options li {
-  background: #172033;
-  border-color: #334155;
-}
-
-[data-theme="dark"] .notice {
-  color: #cbd5e1;
-  background: #1e293b;
-}
-
-[data-theme="dark"] input:disabled {
-  background: #0f172a;
-  color: #94a3b8;
-}
-
 :root {
   --bg: #f3f7f7;
   --panel: #ffffff;
+  --panel-alt: #fbfcfc;
+  --panel-subtle: #f7f9f9;
   --ink: #182026;
   --muted: #65717c;
   --line: #d8dee2;
+  --line-subtle: #e7ecee;
+  --line-inner: #edf0f1;
   --accent: #0c6f72;
   --accent-strong: #094f52;
   --gold: #b7791f;
   --soft: #eef6f5;
+  --chip-border: #cce4e1;
   --danger: #a13a2f;
   --shadow: 0 12px 30px rgba(30, 42, 50, 0.08);
+  --hero-bg: #101820;
+  --segmented-bg: #edf1f2;
+  --disabled-bg: #edf0f1;
+  --topic-gap: #edf0f1;
+  --warm-bg: #fffaf0;
+  --warm-border: #f1ddb8;
+  --notice-text: #3b4650;
+  --locked-text: #73521a;
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --panel-alt: #172033;
+  --panel-subtle: #172033;
+  --ink: #e2e8f0;
+  --muted: #94a3b8;
+  --line: #334155;
+  --line-subtle: #334155;
+  --line-inner: #2d3f55;
+  --soft: #1a3040;
+  --chip-border: #1e4a47;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  --hero-bg: #0d1117;
+  --segmented-bg: #334155;
+  --disabled-bg: #0f172a;
+  --topic-gap: #334155;
+  --warm-bg: #1a2a1e;
+  --warm-border: #2d4a30;
+  --notice-text: #cbd5e1;
+  --locked-text: #d4a853;
 }
 
 * {
@@ -119,7 +84,7 @@ button {
   justify-content: space-between;
   gap: 16px;
   padding: 20px clamp(16px, 3vw, 36px);
-  background: #101820;
+  background: var(--hero-bg);
   color: #fff;
   border-bottom: 4px solid var(--gold);
 }
@@ -158,7 +123,7 @@ button {
   gap: 24px;
   padding: clamp(22px, 4vw, 36px);
   color: #fff;
-  background: #101820;
+  background: var(--hero-bg);
   border-radius: 8px;
   border-bottom: 4px solid var(--gold);
 }
@@ -186,7 +151,7 @@ button {
   height: 148px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, #101820 0 54%, transparent 55%),
+    radial-gradient(circle at center, var(--hero-bg) 0 54%, transparent 55%),
     conic-gradient(#f5c46b calc(var(--progress) * 1%), #31414c 0);
 }
 
@@ -208,7 +173,7 @@ button {
   padding: 20px;
   text-align: left;
   color: var(--ink);
-  background: #fff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -246,7 +211,7 @@ button {
 .dashboard-card {
   min-width: 0;
   padding: 18px;
-  background: #fff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -278,7 +243,7 @@ button {
 .bar-track {
   height: 10px;
   overflow: hidden;
-  background: #edf0f1;
+  background: var(--disabled-bg);
   border-radius: 999px;
 }
 
@@ -296,8 +261,8 @@ button {
 
 .history-item {
   padding: 11px;
-  background: #f7f9f9;
-  border: 1px solid #e7ecee;
+  background: var(--panel-subtle);
+  border: 1px solid var(--line-subtle);
   border-radius: 8px;
 }
 
@@ -323,7 +288,7 @@ button {
   flex-direction: column;
   gap: 18px;
   padding: 22px;
-  background: #fff;
+  background: var(--panel);
   border-right: 1px solid var(--line);
 }
 
@@ -355,7 +320,7 @@ input,
 textarea {
   width: 100%;
   color: var(--ink);
-  background: #fff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 11px;
@@ -363,7 +328,7 @@ textarea {
 
 input:disabled {
   color: var(--muted);
-  background: #edf0f1;
+  background: var(--disabled-bg);
   cursor: not-allowed;
 }
 
@@ -387,7 +352,7 @@ textarea {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #f7f9f9;
+  background: var(--panel-subtle);
 }
 
 .image-preview img {
@@ -406,8 +371,8 @@ textarea {
   gap: 12px;
   margin-top: 12px;
   padding: 14px;
-  background: #f7f9f9;
-  border: 1px solid #e7ecee;
+  background: var(--panel-subtle);
+  border: 1px solid var(--line-subtle);
   border-radius: 8px;
 }
 
@@ -420,14 +385,14 @@ textarea {
 .inline-feedback {
   margin-top: 12px;
   padding: 12px;
-  background: #fffaf0;
-  border: 1px solid #f1ddb8;
+  background: var(--warm-bg);
+  border: 1px solid var(--warm-border);
   border-radius: 8px;
   line-height: 1.5;
 }
 
 .locked-answer {
-  color: #73521a;
+  color: var(--locked-text);
 }
 
 .two-col {
@@ -443,7 +408,7 @@ textarea {
   gap: 4px;
   margin-top: 14px;
   padding: 4px;
-  background: #edf1f2;
+  background: var(--segmented-bg);
   border-radius: 8px;
 }
 
@@ -495,7 +460,7 @@ textarea {
   padding: 6px 8px;
   color: var(--accent-strong);
   background: var(--soft);
-  border: 1px solid #cce4e1;
+  border: 1px solid var(--chip-border);
   border-radius: 999px;
   font-size: 0.78rem;
   white-space: nowrap;
@@ -558,7 +523,7 @@ textarea {
 .icon-btn {
   padding: 0 13px;
   color: var(--ink);
-  background: #fff;
+  background: var(--panel);
   border-color: var(--line);
 }
 
@@ -574,7 +539,7 @@ textarea {
   padding: 14px 16px;
   border-left: 4px solid var(--gold);
   border-radius: 8px;
-  color: #3b4650;
+  color: var(--notice-text);
   line-height: 1.45;
 }
 
@@ -618,7 +583,7 @@ textarea {
 
 .meta-cell {
   padding: 12px;
-  background: #fbfcfc;
+  background: var(--panel-alt);
 }
 
 .meta-cell span {
@@ -655,7 +620,7 @@ textarea {
 
 .question-card {
   padding: 16px 0;
-  border-top: 1px solid #edf0f1;
+  border-top: 1px solid var(--line-inner);
 }
 
 .question-card:first-of-type {
@@ -700,8 +665,8 @@ textarea {
 .scenario {
   margin: 10px 0 12px;
   padding: 12px;
-  background: #f7f9f9;
-  border: 1px solid #e7ecee;
+  background: var(--panel-subtle);
+  border: 1px solid var(--line-subtle);
   border-radius: 8px;
   line-height: 1.5;
 }
@@ -716,8 +681,8 @@ textarea {
 
 .options li {
   padding: 9px 10px;
-  background: #fbfcfc;
-  border: 1px solid #edf0f1;
+  background: var(--panel-alt);
+  border: 1px solid var(--line-inner);
   border-radius: 8px;
 }
 
@@ -735,8 +700,8 @@ summary {
 .rubric {
   margin-top: 10px;
   padding: 12px;
-  background: #fffaf0;
-  border: 1px solid #f1ddb8;
+  background: var(--warm-bg);
+  border: 1px solid var(--warm-border);
   border-radius: 8px;
   line-height: 1.5;
 }
@@ -755,8 +720,8 @@ summary {
 
 .score {
   padding: 12px;
-  background: #f7f9f9;
-  border: 1px solid #e7ecee;
+  background: var(--panel-subtle);
+  border: 1px solid var(--line-subtle);
   border-radius: 8px;
 }
 
@@ -804,7 +769,7 @@ summary {
   margin-bottom: 14px;
   padding: 20px;
   color: #fff;
-  background: #101820;
+  background: var(--hero-bg);
   border-radius: 8px;
   border-bottom: 4px solid var(--gold);
 }
@@ -839,7 +804,7 @@ summary {
 .checklist-filter {
   margin-bottom: 14px;
   padding: 16px;
-  background: #fff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -853,7 +818,7 @@ summary {
 
 .subject-checklist {
   min-width: 0;
-  background: #fff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -866,7 +831,7 @@ summary {
   justify-content: space-between;
   gap: 12px;
   padding: 16px;
-  background: #fbfcfc;
+  background: var(--panel-alt);
   border-bottom: 1px solid var(--line);
 }
 
@@ -897,12 +862,12 @@ summary {
   gap: 1px;
   padding: 0;
   margin: 0;
-  background: #edf0f1;
+  background: var(--topic-gap);
   list-style: none;
 }
 
 .topic-item {
-  background: #fff;
+  background: var(--panel);
 }
 
 .topic-item label {
